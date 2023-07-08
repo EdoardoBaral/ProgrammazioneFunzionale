@@ -4,7 +4,10 @@ import it.udemy.consumer.Instructor;
 import it.udemy.consumer.Instructors;
 import it.udemy.lambda.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.*;
 
 public class Main
@@ -17,6 +20,11 @@ public class Main
 		biConsumer();
 		predicate();
 		specializzazioniPredicate();
+		predicateBiConsumer();
+		biPredicate();
+		function();
+		biFunction();
+		specializzazioniFunction();
 	}
 	
 	private static void introduzione() {
@@ -368,5 +376,181 @@ public class Main
 		System.out.println("DoublePredicate - Valore: 100.15 - Risultato: "+ p3.and(p4).test(100.15));
 		System.out.println("DoublePredicate - Valore: 90 - Risultato: "+ p3.and(p4).test(90));
 		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static void predicateBiConsumer()
+	{
+		System.out.println(">>> PREDICATE CON BICONSUMER <<<\n");
+		
+		/**
+		 * In questo esempio proveremo ad usare una combinazione di Predicate e BiConsumer per stampare la lista degli istruttorii che hanno più di 10 anni di esperienza e che insegnano online.
+		 * Innanzitutto, salviamo la lista degli istruttori dopo aver chiamato il metodo statico Instructors.getAll().
+		 * A questo punto possiamo definire due Predicate distinti che rappresenteranno le due condizioni che l'istruttore deve rispettare.
+		 * Dopodiché definiamo un BiConsumer che contenga le azioni che devono essere svolte sugli istruttori che rispettano le condizioni date, ovvero stampare il nome e la lista dei corsi
+		 * (per questo motivo il BiConsumer ha come generics una String per il nome e una lista di String per i corsi).
+		 * Non resta che ciclare sulla lista con il metodo forEach() per poi cercare tramite un if quali istruttori della lista rispettano le condizioni che abbiamo definito (rappresentate
+		 * dai due Predicate messi in AND). Quando ne viene trovato uno che rispetti le condizioni, si chiama il metodo accept() sul BiConsumer passandogli in input il nome e la lista dei corsi
+		 * dell'istruttore in esame, in modo che vengano stampati.
+		 */
+		List<Instructor> instructors = Instructors.getAll();
+		Predicate<Instructor> instOnlinePred = instructor -> instructor.isOnlineCourses();
+		Predicate<Instructor> instOlderThan10Pred = instructor -> instructor.getYearsOfExperience() > 10;
+		BiConsumer<String, List<String>> biconsumer = (nome, corsi) -> System.out.println("Nome: "+ nome +" - Corsi: "+ corsi);
+		
+		instructors.forEach(instructor -> {
+			if(instOnlinePred.and(instOlderThan10Pred).test(instructor))
+				biconsumer.accept(instructor.getName(), instructor.getCourses());
+		});
+		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static void biPredicate()
+	{
+		System.out.println(">>> BIPREDICATE <<<\n");
+		
+		/**
+		 * Questa è una versione alternativa e più sintetica dell'esercizio effettuato con i Predicate e BiConsumer che fa uso di un BiPredicate, ovvero una specializzaizione
+		 * del Predicate che accetta due oggetti generici in input.
+		 * Seguendo lo schema dell'esercizio precedente, andiamo a salvare in una variabile la lista degli istruttori in una variabile dopodiché, anziché definire due Predicate separati
+		 * che rappresentino le due condizioni che ci interessano (istruttore che insegna online e che abbia più di 10 anni di esperienza), definiamo un BiPredicate unico.
+		 * Il BiPredicate viene definito in modo da accettare un Boolean (valore di isOnlineCourses()) e un Integer (gli anni di esperienza dell'istruttore). Come sempre, il BiPredicate
+		 * viene definito sulla base di una lambda expression che restituisce true se il parametro booleano online è true e se il parametro intero exp è maggiore di 10, false altrimenti.
+		 * In questo modo, a differenza del caso precedente, abbiamo la possibilità di valutare in un colpo solo entrambe le condizioni che ci interessano all'interno di un unico Predicate
+		 * (in questo caso specifico, BiPredicate).
+		 * Infine, si cicla come sempre sulla lista di istruttori, si verifica con una lambda e un if se l'istruttore che stiamo esaminando rispetta le condizioni definitie dal BiPredicate
+		 * (per mezzo del metodo test()) e, come prima, si chiama il metodo accept() sul BiConsumer per stamaparne il nome e la lista dei corsi nel caso il BiPredicate restituisca true.
+		 */
+		List<Instructor> instructors = Instructors.getAll();
+		BiPredicate<Boolean, Integer> bp = (online, exp) -> online && (exp > 10);
+		BiConsumer<String, List<String>> biconsumer = (nome, corsi) -> System.out.println("Nome: "+ nome +" - Corsi: "+ corsi);
+		
+		instructors.forEach(instructor -> {
+			if(bp.test(instructor.isOnlineCourses(), instructor.getYearsOfExperience()))
+				biconsumer.accept(instructor.getName(), instructor.getCourses());
+		});
+		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static void function()
+	{
+		System.out.println(">>> FUNCTION <<<\n");
+		
+		/**
+		 * Function è un'interfaccia funzionale di Java che accetta come parametri due oggetti: uno rappresenta l'input e l'altro l'output da restituire.
+		 * Supponiamo di voler definire una Function che, dato un numero intero, ne restituisca la radice quadrata. Dobbiamo quindi definireuna Function che accetti come parametri
+		 * un Integer (numero in input alla funzione) e un Double (il risultato della radice quadrata dell'input da restituire in output).
+		 * Il comportamento della Function verrà quindi definito per mezzo di una lambda tale per cui, dato un numero in input, questa restituisce la sua radice quadrata per mezzo
+		 * del metodo Math.sqrt() di Java.
+		 * Quando si vuole ottenere il risultato della Function, occorre chiamare il metodo apply().
+		 */
+		Function<Integer, Double> sqrt = number -> Math.sqrt(number);
+		System.out.println("Numero: 64 - Radice quadrata: "+ sqrt.apply(64));
+		System.out.println("Numero: 81 - Radice quadrata: "+ sqrt.apply(81));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Caso analogo per una Function basata sulle stringhe: si vuole definire una Function che, data in input una stringa, ne restituisca in output la versione in sole lettere minuscole.
+		 * Si crea quindi una Function che accetti due oggetti String e la si inizializza per mezzo di un'espressione lambda tale per cui, data una stringa in input, ne viene restituita la
+		 * versione in minuscolo per mezzo del metodo toLowerCase() della classe String.
+		 */
+		Function<String, String> lower = s -> s.toLowerCase();
+		System.out.println("Stringa: CIAO - Risultato: "+ lower.apply("CIAO"));
+		System.out.println("Stringa: Prova - Risultato: "+ lower.apply("Prova"));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * In questo esempio, definiamo una Function che concateni la stringa SUFFISSO ad una stringa data in input. La Function sarà quindi basata su due oggetti String e il suo comportamento
+		 * verrà definito per mezzo di una lambda tale per cui, data una stringa in input, ne viene restituita una in output data dalla concatenazione di questa con SUFFISSO.
+		 * Vediamo poi come utilizzare il metodo andThen() di Function per concatenare due Function distinte.
+		 * Data una striga, vogliamo prima trasformarla in minuscolo e poi concatenarci SUFFISSO. Usiamo quindi la prima Function lower e, per mezzo del metodo andThen(), concateniamo la seconda
+		 * Function concat, dopodiché ne calcoliamo il risultato complessivo per mezzo del metodo apply() e lo stampiamo.
+		 */
+		Function<String, String> concat = (s1) -> s1.concat("SUFFISSO");
+		System.out.println(lower.andThen(concat).apply("Prefisso"));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Definiamo una Function che prenda in input una lista di istruttori e restituisca in output una mappa con chiave il nome dell'istruttore e come valore i suoi anni di esperienza.
+		 * La Function quindi viene definita sulla base di una lambda che richiede in input una lista di istruttori, inizializza un'HashMap vuota, cicla sulla lista degli istruttori e
+		 * inserisce nella mappa il nome di ogni istruttore associato ai relativi anni di esperienza e, infine, restituisce tale mappa.
+		 * La mappa viene poi stampata chiamando il metodo apply della Function a cui viene passata come argomento la lista di istruttori.
+		 */
+		List<Instructor> instructors = Instructors.getAll();
+		Function<List<Instructor>, Map<String, Integer>> instMapFunction = list -> {
+			HashMap<String, Integer> map = new HashMap<>();
+			list.forEach(elem -> map.put(elem.getName(), elem.getYearsOfExperience()));
+			return map;
+		};
+		System.out.println(instMapFunction.apply(instructors));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Volendo complicarci un po' le cose, creiamo una Function che produca una mappa composta dal nome degli istruttori e i loro anni di esperienza ma solo degli istruttori che tengono
+		 * lezioni online.
+		 * Definiamo innanzitutto un Predicate per definire la condizione che gli istruttori devono rispettare, ovvero che tengano dei corsi online: si ha quindi un Predicate basato su
+		 * un oggetto Instructor inizializzato su una lambda che, dato l'istruttore, verifichi il valore del flag onlineCourses.
+		 * La condizione è definita, passiamo quindi alla funzione da svolgere. Definiamo una Function simile alla precedente che prenda in input una lista di istruttori e restituisca in
+		 * output una mappa <String, Integer> in cui la chiave sarà il nome dell'istruttore e il valore sarà il numero di anni di esperienza.
+		 * Il comportamento di questa Function viene definito da una lambda che, data una lista di istruttori, inizializza una mappa vuota, cicla sulla lista di istruttori e, per ogni suo
+		 * elemento, verifica se questo rispetta la condizione data dal Predicate che abbiamo creato (onlineCourses = true), per mezzo del metodo test() del Predicate.
+		 * Se sì, aggiunge alla mappa, altrimenti non fa nulla. In ogni caso, restituisce poi la mappa prodotta.
+		 * Infine, come nell'esempio precedente, si stampa il risultato della Function chiamando su di essa il metodo apply() e passandole come argomento la lista degli istruttori da processare.
+		 */
+		Predicate<Instructor> p = instructor -> instructor.isOnlineCourses();
+		Function<List<Instructor>, Map<String, Integer>> instMapFunctionPred = list -> {
+			HashMap<String, Integer> map = new HashMap<>();
+			list.forEach(elem -> {
+				if(p.test(elem))
+					map.put(elem.getName(), elem.getYearsOfExperience());
+			});
+			return map;
+		};
+		System.out.println(instMapFunctionPred.apply(instructors));
+		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static void biFunction()
+	{
+		System.out.println(">>> BIFUNCTION <<<\n");
+		
+		/**
+		 * Una BiFunction è una specializzazione dell'interfaccia funzionale Function che accetta in input due oggetti e produce un output.
+		 * Supponiamo di voler definire una BiFunction che, ricevuti in input una lista di istruttori e una condizione espressa da un Predicate, produca in output la lista di istruttori
+		 * che insegnano online.
+		 * Gli elementi che ci servono per questo esercizio sono i seguenti:
+		 * 		1) la lista degli istruttori
+		 * 		2) un Predicate basato su un Instructor per verificare che un dato istruttore abbia il flag onlineCourses = true
+		 * 		3) una BiFunction che dati i due elementi precedenti produca il risultato desiderato
+		 * 		4) un Consumer da poter utilizzare su una lista di istruttori per stamparne il contenuto in modo leggibile
+		 * La lista degli istruttori viene recuperata come sempre.
+		 * Il Predicate verifica banalmente che il metodo isOnlineCourses() chiamato sull'istruttore restituisca true.
+		 * La BiFunction prende in input la lista di istruttori e il Predicate e produce in output una nuova lista di istruttori. Il suo comportamento è dato da una lambda che inizializza
+		 * una lista di istruttori vuota, cicla sulla lista ricevuta come argomento e, su ognuno dei suoi elementi, usa il Predicate per verificare la condizione che ci interessa, per mezzo
+		 * del solito metodo test(). Se la condizione è vera, ovvero se l'instruttore insegna online, lo aggiungerà alla lista risultato della Function altrimenti passa oltre.
+		 * Infine viene restituita la lista con tutti gli istruttori che insegnano online.
+		 * Manca solo il Consumer, basato su un oggetto Instructor, definito sulla base di una lambda che descrive le azioni da svolgere su ogni singolo istruttore della lista prodotta dalla
+		 * BiFunction, ovvero una semplice stampa dell'istruttore.
+		 * A questo punto, per ottenere il risultato della BiFunction appena definita, chiamiamo su di essa il metodo apply() passandogli gli argomenti necessari (lista e Predicate) e questo
+		 * produrrà una lista di istruttori come risultato.
+		 * Su questa lista, cicleremo con il forEach() e ognuno degli elementi verrà passato in input al metodo accept() del Consumer per essere stampato a video.
+		 */
+		List<Instructor> instructors = Instructors.getAll();
+		Predicate<Instructor> p1 = instructor -> instructor.isOnlineCourses();
+		BiFunction<List<Instructor>, Predicate<Instructor>, List<Instructor>> bf1 = (list, pred) -> {
+			List<Instructor> result = new ArrayList<>();
+			list.forEach(elem -> {
+				if(pred.test(elem))
+					result.add(elem);
+			});
+			return result;
+		};
+		Consumer<Instructor> c1 = elem -> System.out.println(elem);
+		bf1.apply(instructors, p1).forEach(elem -> c1.accept(elem));
+		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static void specializzazioniFunction()
+	{
+	
 	}
 }
