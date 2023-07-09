@@ -4,10 +4,7 @@ import it.udemy.consumer.Instructor;
 import it.udemy.consumer.Instructors;
 import it.udemy.lambda.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.*;
 
 public class Main
@@ -25,6 +22,8 @@ public class Main
 		function();
 		biFunction();
 		specializzazioniFunction();
+		supplier();
+		methodReference();
 	}
 	
 	private static void introduzione() {
@@ -551,6 +550,174 @@ public class Main
 	
 	private static void specializzazioniFunction()
 	{
+		System.out.println(">>> SPECIALIZZAZIONI FUNCTION <<<\n");
+		
+		/**
+		 * UnaryOperator è un'interfaccia funzionale che estende Function e che ha la particolarità di accettare come parametro lo stesso tipo di oggetto che deve restituire come output.
+		 * Supponiamo di voler definire uno UnaryOperator che, dato un intero, lo restituisca moltiplicato per 100.
+		 * Basta dichiarare uno UnaryOperator di Integer basato su una lambda che accetta un argomento intero e lo restituisce moltiplicato per 100.
+		 * Per sfruttare lo UnaryOperator basta poi chiamare il suo metodo apply() passandogli come argomento l'intero da moltiplicare.
+		 */
+		UnaryOperator<Integer> unary = i -> i * 100;
+		System.out.println("Numero: 5 - Risultato: "+ unary.apply(5));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Come UnaryOperator costituisce una specializzazione di Function, esistono varie specializzazioni di UnaryOperator che permettono di gestire implicitamente un certo tipo di oggetto:
+		 * IntUnaryOprator (interi), LongUnaryOperator (long), DoubleUnaryOperator (numeri decimali double), analogamente a quanto visto per le specializzazioni dei Consumer.
+		 * Tutte queste tipologie funzionano esenzialmente allo stesso modo: si dichiara lo UnaryOperator specifico che si desidera usare con la sua lambda che ne definisce il comporamento e,
+		 * quando si intende usare l'oggetto, si chiama una specializzazione del metodo apply() specifica a seconda dei casi (applyAsInt(), applyAsLong(), applyAsDouble()...) passandogli come
+		 * argomento il numero che verrà usato dallo UnaryOperator, che deve chiaramente essere compatibile con il tipo di oggetto accettato dallo stesso.
+		 */
+		IntUnaryOperator unaryInt = i -> i * 100;
+		System.out.println("Numero: 6 - Risultato: "+ unaryInt.applyAsInt(6));
+		System.out.println("------------------------------------------------------------");
+		
+		LongUnaryOperator unaryLong = i -> i * 100;
+		System.out.println("Numero: 3 - Risultato: "+ unaryLong.applyAsLong(3));
+		System.out.println("------------------------------------------------------------");
+		
+		DoubleUnaryOperator unaryDouble = i -> i * 100;
+		System.out.println("Numero: 4.5 - Risultato: "+ unaryDouble.applyAsDouble(4.5));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Similmente agli UnaryOperator, i BinaryOperator sono delle interfacce funzionali che acettano due argomenti e restituiscono un risultato dello stesso tipo.
+		 * Il funzionamento è del tutto analogo a quello degli UnaryOperator.
+		 */
+		BinaryOperator<Integer> binary = (x, y) -> x + y;
+		System.out.println("Parametri: 5 e 6 - Risultato: "+ binary.apply(5, 6));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Come per gli Unary Operator, esistono delle specializzazioni dei BinaryOperator dedicate a determinati tipi di oggetti (Integer, Long, Double...).
+		 * In modo del tutto analogo a queste specializzazioni, per gli IntBinaryOperator, LongBinaryOperator e DoubleBinaryOperator esistono delle specializzazioni del
+		 * metodo apply() che si possono usare per ottenere il risultato dell'operatore.
+		 */
+		IntBinaryOperator intBin = (x, y) -> x + y;
+		System.out.println("Parametri: 1 e 2 - Risultato: "+ intBin.applyAsInt(1, 2));
+		System.out.println("------------------------------------------------------------");
+		
+		LongBinaryOperator longBin = (x, y) -> x + y;
+		System.out.println("Parametri: 10 e 4 - Risultato: "+ longBin.applyAsLong(10, 4));
+		System.out.println("------------------------------------------------------------");
+		
+		DoubleBinaryOperator doubleBin = (x, y) -> x + y;
+		System.out.println("Parametri: 5.1 e 6.3 - Risultato: "+ doubleBin.applyAsDouble(5.1, 6.3));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * I BinaryOperator (e le relative specializzazioni) mettono anche a disposizione due metodi statici minBy() e maxBy() che restituiscono, rispettivamente, il minimo e
+		 * il massimo tra i due valori ricevuti come argomento.
+		 * Per determinare un'ordine di paragone tra i due oggetti (non necessariamente si parla di numeri), occorre definire un Comparator da passare in input al metodo.
+		 * Una volta definito il Comparator contenente il criterio di confronto per i due oggetti dati in input al BinaryOperator, definiamo appunto il nostro BinaryOperator
+		 * chiamando questa volta il metodo statico BinaryOperator.maxBy() e poi, come sempre, stampiamo il risultato del nostro operator chiamando il metodo apply().
+		 */
+		Comparator<Integer> comp = (x, y) -> x.compareTo(y);
+		BinaryOperator binMax = BinaryOperator.maxBy(comp);
+		System.out.println("Parametri: 10 e 37 - Massimo: "+ binMax.apply(10, 37));
+		System.out.println("------------------------------------------------------------\n");
+	}
 	
+	private static void supplier()
+	{
+		System.out.println(">>> SUPPLIER <<<\n");
+		
+		/**
+		 * Supplier è un'interfaccia funzionale che permette di astrarre un'operazione che non richiede alcun input ma restituisce un risultato di qualche tipo (il generic del Supplier).
+		 * Il risultato del Supplier viene reso disponibile dal metodo get().
+		 * Supponiamo di voler definire un Supplier che restituisca un numero casuale intero. Dichiariamo quindi una variabile Supplier<Integer> basata su una lambda che restituisce
+		 * il numero casuale, calcolato mediante il metodo statico Math.rand().
+		 */
+		Supplier<Integer> s = () -> (int) (Math.random() * 1000);
+		System.out.println("Valore casuale: "+ s.get());
+		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static void methodReference()
+	{
+		System.out.println(">>> METHOD REFERENCE <<<\n");
+		
+		List<Instructor> list = Instructors.getAll();
+		
+		/**
+		 * Con Method Reference si intende una particolare sintassi di Java che permette d fare riferimento ad un metodo di una classe e di utilizzarlo come un'implementazione di
+		 * un'interfaccia funzionale compatibile. E' un modo per scrivere lambda expression più concise e per riutilizzare metodi esistendi all'interno di esse senza doverli riscrivere
+		 * come lambda expressions.
+		 * Per rendere chiaro come sia possibile scrivere codice con questa particolare sintassi ed evidenziare il fatto che il codice scritto in questo modo più conciso sia del tutto
+		 * equivalente al codice scritto normalmente in modo più esteso, facciamo qualche esempio di confronto tra queste due modalità.
+		 * Supponiamo di voler definire un Predicate che permetta di valutare la condizione secondo cui un istruttore abbia dei corsi online. O si definisce questo Predicate nel modo
+		 * classico con una lambda che abbiamo già esaminato esaurientemente oppure lo si può fare con la metohod reference, ovvero indicando il nome della classe contenente il metodo
+		 * che ci interessa seguito da :: e dal nome del metodo senza parentesi.
+		 * In questo modo, il compilatore di Java è sufficientemente elaborato da capire a quale metodo si vuole fare riferimento e quale debba essere l'eventuale suo input. In questo
+		 * caso specifico, il compilatore capirà che il metodo che ci interessa è isOnlineCourses() della classe Instructor, il quale non richiede argomenti, e lo chiamerà sull'oggetto
+		 * Instructor specificato nel Predicate.
+		 */
+		Predicate<Instructor> p1 = instructor -> instructor.isOnlineCourses();
+		Predicate<Instructor> p2 = Instructor::isOnlineCourses;
+		list.forEach(i -> {
+			if(p1.test(i))
+				System.out.print("["+ i.getName() +" - "+ i.isOnlineCourses() +"] ");
+		});
+		System.out.println();
+		list.forEach(i -> {
+			if(p2.test(i))
+				System.out.print("["+ i.getName() +" - "+ i.isOnlineCourses() +"] ");
+		});
+		System.out.println("\n------------------------------------------------------------");
+		
+		/**
+		 * Vediamo ora un esempio su una Function che deve calcolare la radice quadrata di un numero intero. Anche qui definiamo due Function equivalenti che svolgono lo stesso compito
+		 * ma sfruttano le due sintassi disponibili.
+		 * Sulla prima non ci soffermiamo, essendo sufficientemente semplice, mentre la seconda fa uso della method reference per chiamare il metodo sqrt() della classe Math di Java.
+		 * A differenza dell'esempio precedente, qui utilizziamo la method reference su un metodo statico di una classe facente parte delle librerie di Java, non su un metodo di istanza
+		 * di una nostra classe, ma possiamo vedere che la sintassi funziona ugualmente.
+		 */
+		Function<Integer, Double> f1 = num -> Math.sqrt(num);
+		Function<Integer, Double> f2 = Math::sqrt;
+		System.out.println("Numero 64 - Radice quadrata: "+ f1.apply(64));
+		System.out.println("Numero 64 - Radice quadrata: "+ f2.apply(64));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Ora un esempio su una function che prende in input una stringa e ne restituisce la versione in lettere minuscole.
+		 * La versione della function che usa la method reference chiama il metodo toLowerCase() della classe String di Java e applica questo metodo sulla stringa passata in input
+		 * alla Function stessa.
+		 */
+		Function<String, String> fs1 = s -> s.toLowerCase();
+		Function<String, String> fs2 = String::toLowerCase;
+		System.out.println("Stringa: CIAO - Minuscola: "+ fs1.apply("CIAO"));
+		System.out.println("Stringa: CIAO - Minuscola: "+ fs2.apply("CIAO"));
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * Come accennato in precedenza, la sintassi method reference non può essere utilizzata solo sui metodi nativi delle librerie di Java ma anche su metodi di classi definite
+		 * da noi stessi.
+		 * Supponiamo di definire un metodo experienceGreaterThan10() che, dato un istruttore come argomento, restituisca true se questo ha più di 10 anni di esperienza, false altrimenti.
+		 * Nulla ci vieta di chiamare questo metodo tramite method reference sugli oggetti Instructor della nostra lista per cercare gli istruttori che soddisfano questa condizione.
+		 */
+		Predicate<Instructor> p3 = Main::experienceGreaterThan10;
+		Consumer<Instructor> cons = instructor -> System.out.println(instructor.getName() +" - "+ instructor.getYearsOfExperience());
+		list.forEach(instructor -> {
+			if(p3.test(instructor))
+				cons.accept(instructor);
+		});
+		System.out.println("------------------------------------------------------------");
+		
+		/**
+		 * La sintassi method reference può essere utilizzata anche per far riferimento ai costruttori nelle classi. Come in qualunque altro caso e qualunque altro metodo
+		 * da referenziare in questo modo, occorre che tale metodo rispecchi il tipo di interfaccia funzionale a cui si assegna il risultato.
+		 * Ad esempio, supponiamo che ci serva assegnare ad un Supplier una nuova istanza di un oggetto Instructor. Possiamo referenziare il costruttore (in questo caso
+		 * quello vuoto) della classe Instructor per mezzo dell'istruzione Instructor::new e assegnare il risultato ad una variabile Supplier<Instructor>, proprio perché
+		 * il tipo dell'oggetto restituito dal metodo referenziato è compatibile con quello dichiarato per l'interfaccia funzionale Supplier a cui viene assegnato.
+		 */
+		Supplier<Instructor> supplier = Instructor::new;
+		System.out.println(supplier.get());
+		System.out.println("------------------------------------------------------------\n");
+	}
+	
+	private static boolean experienceGreaterThan10(Instructor instructor)
+	{
+		return instructor.getYearsOfExperience() > 10;
 	}
 }
