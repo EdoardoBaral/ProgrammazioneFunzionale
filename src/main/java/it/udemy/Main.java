@@ -6,6 +6,7 @@ import it.udemy.lambda.*;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.Collectors;
 
 public class Main
 {
@@ -24,6 +25,7 @@ public class Main
 		specializzazioniFunction();
 		supplier();
 		methodReference();
+		streams();
 	}
 	
 	private static void introduzione() {
@@ -719,5 +721,79 @@ public class Main
 	private static boolean experienceGreaterThan10(Instructor instructor)
 	{
 		return instructor.getYearsOfExperience() > 10;
+	}
+
+	private static void streams()
+	{
+		System.out.println(">>> STREAMS <<<\n");
+
+		/**
+		 * Le Stream API di Java sono dei metodi delle librerie Java che permettono di eseguire operazioni concatenate su delle collection sfruttando il paradigma
+		 * della programmazione funzionale, ovvero facendo largo uso di Predicate, Consumer, lambda expressions...
+		 * Le Stream API hanno il grande vantaggio di permettere di realizzare delle operazioni complesse con una sintassi molto sintetica e concatenando i metodi
+		 * tra loro, in modo da rendere evidente la sequenza di operazioni che si intende svolgere su una collection.
+		 * Supponiamo per questo primo esempio di avere a disposizione una lista di istruttori e di voler generare una mappa dei soli insegnanti che insegnano
+		 * online e che hanno più di 10 anni di esperienza (mappa con chiave il nome dell'insegnante e come valore la lista dei suoi corsi).
+		 * Definiamo innanzitutto due Predicate per descrivere le condizioni che ogni istruttore deve rispettare e poi ricaviamo la lista degli istruttori mediante
+		 * la solita chiamata al metodo statico Instructors.getAll().
+		 * Fatto ciò, dichiariamo la nostra mappa, che avrà chiave String e valore una List<String>.
+		 * Per popolare la nostra mappa, dovremo ciclare sulla lista degli istruttori in cerca di quelli che rispettano le condizioni che ci siamo imposti, quindi
+		 * chiamiamo innanzitutto il metodo stream() sulla lista per aprire appunto uno stream sulla collection e utilizziamo il metodo filter() per generare una nuova
+		 * collection contenente i soli elementi della lista di partenza che soddisfano le nostre condizioni. Queste sono state espresse per mezzo di due Predicate,
+		 * che metteremo in AND logico per mezzo del metodo and() e passeremo come argomento al metodo filter() dello stream.
+		 * Abbiamo quindi la nostra sottolista di instruttori ma dobbiamo trasformarla in una mappa. Per farlo, chiamiamo a cascata il metodo collect() a cui passiamo
+		 * come argomento il risultato del metodo statico Collectors.toMap().
+		 * Andando per ordine, il metodo Collectors.toMap() di fatto cicla sulla lista filtrata e, per ogni suo elemento, va ad inserire in una mappa il nome
+		 * dell'istruttore come chiave e la lista dei suoi corsi come valore (si noti l'utilizzo della sintassi method reference).
+		 * Abbiamo quindi la mappa correttamente popolata che può essere stampata a video.
+		 */
+		Predicate<Instructor> p1 = instructor -> instructor.isOnlineCourses();
+		Predicate<Instructor> p2 = instructor -> instructor.getYearsOfExperience() > 10;
+		List<Instructor> list = Instructors.getAll();
+		Map<String, List<String>> map = list.stream()
+				.filter(p1.and(p2))
+				.collect(Collectors.toMap(Instructor::getName, Instructor::getCourses));
+		System.out.println(map);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Il metodo map() delle Stream API è un metodo che prende in input una Function e, pertanto, il suo compito è quello di permettere di eseguire delle generiche
+		 * azioni sugli elementi di uno stream.
+		 * Uno scopo più preciso del metodo, all'atto pratico, è quello di permettere allo sviluppatore di cambiare il tipo di oggetti di uno stream da X a Y: partendo
+		 * da uno stream di oggetti X, ad esempio, è possibile chiamare ad un certo punto il metodo map() per mappare appunto l'elemento di tipo X su un elemento di
+		 * tipo Y e proseguire con le successive operazioni.
+		 * Supponiamo di avere a disposizione una lista di istruttori e di voler generare, a partire da questa, una lista dei loro nomi in lettere maiuscole.
+		 * Apriamo quindi uno stream sulla lista di istruttori e chiamiamo il metodo map() per cambiare il tipo degli oggetti dello stream da Instructor a String,
+		 * andando a prendere il nome dell'istruttore per mezzo del metodo getName(). Si cambia quindi il tipo degli elementi dello stream da Instructor a String.
+		 * Chiamiamo una seconda volta map() non per cambiare nuovamente il tipo degli elementi dello stream ma per eseguire un'operazione su di essi, ovvero
+		 * trasformare la stringa del nome dell'istruttore in maiuscolo.
+		 * Infine, si trasforma lo stream in una lista per mezzo del metodo Collectors.toList() e si stampa il risultato.
+		 */
+		List<String> nomi = list.stream()
+				.map(Instructor::getName)
+				.map(String::toUpperCase)
+				.collect(Collectors.toList());
+		System.out.println(nomi);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Il metodo flatMap() della Stream API assolve quasi la stessa funzione di map() ma va utilizzato quando devono essere trasformate delle strutture dati complesse.
+		 * Supponiamo di avere una lista di istruttori a disposizione e di voler ottenere una lista dei corsi di tutti quanti gli istruttori.
+		 * Definiamo quindi una lista di stringhe e iniziamo a popolarla aprendo uno stream sulla lista di istruttori, per ciclarci sopra.
+		 * Dato lo stream di istruttori, su ognuno di essi si chiama map() per ottenere la lista dei corsi, quindi per cambiare il tipo di oggetti dello stream da Instructor
+		 * a List<String>.
+		 * A questo punto, abbiamo uno stream di liste di string (le liste dei corsi tenuti dai singoli insegnanti) che vogliamo trasformare in uno stream di String, ovvero
+		 * dei soli nomi dei corsi. Dobbiamo quindi passare da una struttura dati complessa (la lista) ad un oggetto semplice (la stringa), pertanto usiamo il metodo flatMap()
+		 * passandogli come argomento il tipo di oggetto che vogliamo avere in output a partire dall'elemento considerato: partiamo da uno Stream<List<String>> quindi dovremo
+		 * chiamare il metodo stream() sulla List<String> per ottenere uno Stream<String>.
+		 * Fatto ciò, chiamaiamo il metodo collect() sul risultato di flatMap() per convertire il nostro stream di stringhe in una lista (contenente possibili duplicati, nel caso
+		 * lo stesso corso sia tenuto da più insegnanti) e stampiamo il risultato.
+		 */
+		List<String> corsi = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
+		System.out.println(corsi);
+		System.out.println("------------------------------------------------------------");
 	}
 }
