@@ -795,5 +795,178 @@ public class Main
 				.collect(Collectors.toList());
 		System.out.println(corsi);
 		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Supponiamo di voler effettuare il conteggio dei corsi tenuti dagli istruttori (considerando per semplicità anche eventuali duplicati), quindi la semplice somma di tutti
+		 * i corsi che troviamo nelle liste dei corsi dei singoli istruttori.
+		 * Per contare gli elementi facenti parte di uno stream, possiamo affidarci al metodo count().
+		 * Apriamo quindi uno stream sulla lista degli istruttori e ricaviamo la lista completa dei corsi come fatto in precedenza, chiamando prima il metoto map() per ottenere le
+		 * liste dei corsi dei singoli istruttori e poi il metodo flatMap() per trasformare le liste in semplici stringhe.
+		 * Una volta ottenuto uno stream di stringhe (i nomi dei corsi), effettuiamo il conteggio degli elementi di questo stream con count() per poi stamparlo in output.
+		 */
+		long contatoreCorsi = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.count();
+		System.out.println("Numero totale dei corsi: "+ contatoreCorsi);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Se volessimo effettuare un ulteriore raffinamento dell'esempio precedente eliminando i duplicati, potremmo chiamare il metodo distinct() sullo stream di stringhe fornito
+		 * dal metodo flatMap() per ottenere uno stream da cui sono stati eliminati gli elementi duplicati.
+		 * Su questo stream possiamo poi chiamare come prima il metodo count() per determinare il numero dei sui elementi, ovvero il numero di corsi distinti tenuti da tutti gli istruttori.
+		 */
+		long contatoreCorsiDistinti = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.distinct()
+				.count();
+		System.out.println("Numero reale dei corsi (duplicati esclusi): "+ contatoreCorsiDistinti);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Possiamo anche ordinare gli elementi di uno stream secondo un ordine naturale, sfruttando il metodo sorted().
+		 * Ad esempio possiamo ordinare alfabeticamente i nomi dei corsi tenuti dagli istruttori.
+		 * Dichiariamo quindi una lista di stringhe (i nomi dei corsi) e apriamo uno stream sulla lista degli istruttori.
+		 * Ricaviamo poi uno stream di String contenente i nomi di tutti i corsi (tramite map() e flatMap(), come visto in precedenza), eliminiamo i duplicati con distinct(),
+		 * ordiniamo alfabeticamente (essendo stringhe) gli elementi di questo stream chiamando il metodo sorted() e generiamo la lista finale mediante il metodo collect(),
+		 * per poi stampare il risultato.
+		 */
+		List<String> corsiOrdinati = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.distinct()
+				.sorted()
+				.collect(Collectors.toList());
+		System.out.println("Lista dei corsi ordinati: "+ corsiOrdinati);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Esiste anche una versione di sorted() che permette di effettuare un ordinamento degli elementi di uno stream che sia differente da quello naturale, per mezzo di
+		 * un Comparator specifico ricevuto come argomento.
+		 * Supponiamo ad esempio di voler ordinare i nomi dei corsi ma in ordina alfabetico inverso.
+		 * Il procedimento sarà analogo a quello dell'esempio precedente ma il metodo sorted() dovrà ricevere come argomento un Comparator specifico che descriva la modalità
+		 * di ordinamento da applicare, essendo differente da quella naturale. Passiamo quindi, in questo caso, Comparator.reverseOrder().
+		 * La lista risultato delle nostre operazioni sarà quindi la lista dei corsi in ordine alfabetico inverso.
+		 */
+		List<String> corsiInvertiti = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.distinct()
+				.sorted(Comparator.reverseOrder())
+				.collect(Collectors.toList());
+		System.out.println("Lista dei corsi invertiti: "+ corsiInvertiti);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Un altro modo per eseguire un ordinamento degli elementi di uno stream, sempre per mezzo del metodo sosrted(). In questo caso, cerchiamo di ordinare gli oggetti
+		 * Instructor per nome dell'istruttore. Il metodo sosrted() necessita di un oggetto Comparable in input, che possiamo ottenere da una chiamata al metodo statico
+		 * Comparator.comparing(). Questo a sua volta necessita come argomento di una Function per determinare l'oggetto su cui effettuare l'ordinamento (nel nostro caso
+		 * il nome dell'istruttore, quindi Instructor::getName).
+		 */
+		List<Instructor> sortedInstructors = list.stream()
+				.sorted(Comparator.comparing(Instructor::getName))
+				.collect(Collectors.toList());
+		sortedInstructors.forEach(System.out::println);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Il metodo anyMatch() permette di verificare se almeno uno degli elementi di uno stream rispetta la condizione specificata dal Predicate che viene passato come argomento
+		 * al metodo. Il metodo restituisce true, se almeno uno degli elementi rispetta la condizione, false altrimenti.
+		 */
+		boolean match = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.anyMatch(course -> course.startsWith("Java"));
+		System.out.println("Esistono corsi che iniziano con la stringa 'Java'? "+ match);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Il metodo allMatch() permette di verificare se tutti gli elementi di uno stream rispettano la condizione specificata per mezzo del Predicate passato come argomento
+		 * al metodo. Se tutti gli elementi rispettano la condizione, restituisce true altrimenti false.
+		 */
+		boolean matchCompleto = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.allMatch(course -> course.startsWith("Java"));
+		System.out.println("Tutti i corsi iniziano con la stringa 'Java'? "+ matchCompleto);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Il metodo noneMatch() è il complementare di allMatch() e verifica se nessuno degli elementi dello stream rispetta la condizione indicata dal Predicate. Se nessuno
+		 * la rispetta restituisce true, altrimenti false.
+		 */
+		boolean noneMatch = list.stream()
+				.map(Instructor::getCourses)
+				.flatMap(List::stream)
+				.noneMatch(course -> course.startsWith("Java"));
+		System.out.println("Tutti i corsi non iniziano con la stringa 'Java'? "+ noneMatch);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Il metodo reduce() permette di applicare ricorsivamente una determinata operazione sugli elementi di uno stream per operare una riduzione o aggregazione di tali elementi
+		 * e fornire un risultato in output.
+		 * Come esempio pratico, supponiamo di voler calcolare la somma dei numeri interi da 1 a 9 inclusi.
+		 * Definiamo una lista di interi contenente i numeri da sommare dopodiché apriamo su questa lista uno stream e chiamiamo il metodo reduce().
+		 * Questo necessita di due argomenti, un oggetto di partenza dello stesso tipo degli elementi dello stream (nel nostro caso un intero) e un BinaryOperator di elementi sempre
+		 * dello stesso tipo: in altre parole abbiamo il valore di partenza e l'azione che il metodo deve eseguire per ogni elemento dello stream.
+		 * Il valore di partenza sarà 0 perché il calcolo della somma dovrà partire da zero (elemento neutro) mentre il BinarOperator sarà dato da una lambda per cui, dati due elementi
+		 * (interi), questa calcola la somma dei due e la restituisce.
+		 * Il metodo reduce() cicla sullo stream di elementi interi e li somma uno alla volta al risultato dell'operazione svolta sul precedente elemento (a parte il primo elemento
+		 * che verrà sommato al valore di partenza 0, passato come argomento).
+		 * Si avrà quindi che il primo elmento 1 verrà sommato a 0 dando come risultato 1, il secondo elemento 2 verrà sommato alla somma precedente 1 dando 3 e così via fino ad arrivare
+		 * ad avere il risultato finale dato dalla somma dell'ultimo elemento dello stream con il risultato dell'operazione svolta su tutti i precedenti elementi dello stream.
+		 */
+		List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9);
+		int sum = numbers.stream()
+				.reduce(0, (a, b) -> a+b);
+		System.out.println("Somma: "+ sum);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Caso analogo per il calcolo del prodotto dei primi 9 numeri interi. Il procedimento è analogo a quello della somma, si usa sempre il metodo reduce() degli stream, ma si fissa
+		 * il valore di partenza 1, non più zero, perché nel caso del prodotto è 1 ad essere l'elemento neutro. Se indicassimo 0 come valore di partenza, questo andrebbe ad annullare
+		 * il prodotto per ogni numero dello stream.
+		 */
+		int product = numbers.stream()
+				.reduce(1, (a, b) -> a*b);
+		System.out.println("Prodotto: "+ product);
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * Esiste una variante di reduce() che non necessita del valore di partenza, che prende come argomento il solo BinaryOperator e restituisce in output un Optional.
+		 * Questo permette di gestire la presenza o meno di un risultato in quanto se la sequenza di operazioni effettuate da reduce() va a buon fine, viene restituito un Optional
+		 * contenente il risultato complessivo, altrimenti viene dato un Optional vuoto, ad indicare la mancanza del risultato.
+		 */
+		Optional<Integer> sum2 = numbers.stream()
+				.reduce((a, b) -> a+b);
+		System.out.println("Somma (optional valorizzato): "+ sum2.get());
+		System.out.println("------------------------------------------------------------");
+
+		/**
+		 * In caso il metodo reduce() non fornisca alcun risultato, questo corrisponderà ad un Optional vuoto. Per ottenere il valore contenuto in un Optional occorre chiamare il metodo
+		 * get() ma occorre assicurarsi prima che l'Optional non sia vuoto altrimenti viene lanciata un'eccezione.
+		 * Prima di stampare il risultato del metodo reduce() occorre quindi verificare se sia presente un metodo nell'Optional sfruttando il metodo ifPresent() o, come in questo caso,
+		 * ifPresentOrElse(). Volendo percorrere questa seconda strada, come primo argomento al metodo ifPresentOrElse() dobbiamo passare un Consumer che specifica l'azione da svolgere
+		 * sull'oggetto contenuto nell'Optional (in questo caso una semplice stampa) mentre il secondo argomento è una Runnable che indica l'azione da svolgere in caso contrario (in
+		 * questo caso una lambda che, senza ricevere nulla in input, stampa la stringa "vuoto").
+		 */
+		List<Integer> emptyList = new ArrayList<>();
+		Optional<Integer> sum3 = emptyList.stream()
+				.reduce((a, b) -> a+b);
+		System.out.print("Somma (optional vuoto): ");
+		sum3.ifPresentOrElse(System.out::println, () -> System.out.println("vuoto"));
+		System.out.println("------------------------------------------------------------");
+
+		Optional<Instructor> instructor = list.stream()
+				.reduce((inst1, inst2) -> {
+					if(inst1.getYearsOfExperience() > inst2.getYearsOfExperience())
+						return inst1;
+					else
+						return inst2;
+				});
+		System.out.print("Istruttore col maggior numero di anni di esperienza: ");
+		instructor.ifPresentOrElse(System.out::println, () -> System.out.println("vuoto"));
+		System.out.println("------------------------------------------------------------");
 	}
 }
